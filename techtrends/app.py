@@ -3,20 +3,43 @@ import sqlite3
 from flask import Flask, jsonify, json, render_template, request, url_for, redirect, flash
 from werkzeug.exceptions import abort
 
+db_connection_cont = 0
 # Function to get a database connection.
 # This function connects to database with the name `database.db`
 def get_db_connection():
+    global db_connection_cont
     connection = sqlite3.connect('database.db')
     connection.row_factory = sqlite3.Row
+    db_connection_cont += 1
     return connection
+
+# Close a db connection
+def close_db_connection(connection):
+    global db_connection_cont
+    connection.close()
+    db_connection_cont -= 1
 
 # Function to get a post using its ID
 def get_post(post_id):
     connection = get_db_connection()
     post = connection.execute('SELECT * FROM posts WHERE id = ?',
                         (post_id,)).fetchone()
-    connection.close()
+    close_db_connection(connection)
     return post
+
+# count number of elements
+def count_rows(table_name):
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+        count = cursor.fetchone()[0]
+        return count
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return None
+    finally:
+        close_db_connection(conn)
 
 # Define the Flask application
 app = Flask(__name__)
@@ -27,7 +50,7 @@ app.config['SECRET_KEY'] = 'your secret key'
 def index():
     connection = get_db_connection()
     posts = connection.execute('SELECT * FROM posts').fetchall()
-    connection.close()
+    close_db_connection(connection)
     return render_template('index.html', posts=posts)
 
 # Define how each individual article is rendered 
@@ -59,11 +82,32 @@ def create():
             connection.execute('INSERT INTO posts (title, content) VALUES (?, ?)',
                          (title, content))
             connection.commit()
-            connection.close()
+            close_db_connection(connection)
 
             return redirect(url_for('index'))
 
     return render_template('create.html')
+
+#Entpoint for health check
+@app.route('/healtz') 
+def healthz():
+    response = app.response_class(
+            response=json.dumps({"result":"OK - healthy"}),
+            status=200,
+            mimetype='application/json'
+        )
+    return response
+
+#metrics endpoint returning the db connections and the number of posts in the database.
+@app.route('/metrics')
+def metrics():
+    post_count = count_rows("posts")
+    response = app.response_class(
+            response=json.dumps({"db_connection_count":str(db_connection_cont), "post_count": post_count}),
+            status=200,
+            mimetype='application/json'
+        )
+    return response
 
 # start the application on port 3111
 if __name__ == "__main__":
