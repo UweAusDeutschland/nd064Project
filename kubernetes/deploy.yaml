@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: busybox
+  name: techtrend
+  namespace: sandbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: busybox
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: busybox
+    spec:
+      containers:
+      - image: usuelter/techtrend:latest
+        name: busybox
+        resources:
+          requests:
+            cpu: 250m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 128Mi
+                livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 3111
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 3111
+          initialDelaySeconds: 3
+          periodSeconds: 5
+status: {}
