@@ -1,4 +1,6 @@
 import sqlite3
+import logging
+import sys
 
 from flask import Flask, jsonify, json, render_template, request, url_for, redirect, flash
 from werkzeug.exceptions import abort
@@ -59,13 +61,17 @@ def index():
 def post(post_id):
     post = get_post(post_id)
     if post is None:
+      app.logger.info("Tried to fetch an unknown post: " + str(post_id))
       return render_template('404.html'), 404
     else:
+      app.logger.info("Received post with id: " + str(post_id) + 
+                   " with headline " + str(post['title']))
       return render_template('post.html', post=post)
 
 # Define the About Us page
 @app.route('/about')
 def about():
+    app.logger.info("About us is called.")
     return render_template('about.html')
 
 # Define the post creation functionality 
@@ -83,7 +89,7 @@ def create():
                          (title, content))
             connection.commit()
             close_db_connection(connection)
-
+            app.logger.info("New article posted with headline: " + str(title))
             return redirect(url_for('index'))
 
     return render_template('create.html')
@@ -103,7 +109,7 @@ def healthz():
 def metrics():
     post_count = count_rows("posts")
     response = app.response_class(
-            response=json.dumps({"db_connection_count":str(db_connection_cont), "post_count": post_count}),
+            response=json.dumps({"db_connection_count":db_connection_cont, "post_count": post_count}),
             status=200,
             mimetype='application/json'
         )
@@ -111,4 +117,5 @@ def metrics():
 
 # start the application on port 3111
 if __name__ == "__main__":
+   logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
    app.run(host='0.0.0.0', port='3111')
