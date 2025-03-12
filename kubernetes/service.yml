@@ -10,6 +10,6 @@ spec:
     port: 4111
     protocol: TCP
     targetPort: 3111
-  type: CLusterIP
+  type: ClusterIP
 status:
   loadBalancer: {}
