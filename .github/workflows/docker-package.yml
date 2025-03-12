@@ -27,4 +27,4 @@ jobs:
                   context: .
                   file: Dockerfile
                   push: true
-                  tags: ${{ secrets.DOCKER_USERNAM }}/techtrends:latest
+                  tags: ${{ secrets.DOCKER_USERNAME }}/techtrends:latest
