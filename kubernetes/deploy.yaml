@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     app: techtrend
   name: techtrend
@@ -14,12 +13,11 @@ spec:
   strategy: {}
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: techtrend
     spec:
       containers:
-      - image: usuelter/techtrend:latest
+      - image: usuelter/techtrends:latest
         name: techtrend
         resources:
           requests:

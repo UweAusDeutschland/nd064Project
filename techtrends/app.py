@@ -17,9 +17,7 @@ def get_db_connection():
 
 # Close a db connection
 def close_db_connection(connection):
-    global db_connection_cont
     connection.close()
-    db_connection_cont -= 1
 
 # Function to get a post using its ID
 def get_post(post_id):
@@ -61,7 +59,7 @@ def index():
 def post(post_id):
     post = get_post(post_id)
     if post is None:
-      app.logger.info("Tried to fetch an unknown post: " + str(post_id))
+      app.logger.error("404: Tried to fetch an unknown post: " + str(post_id))
       return render_template('404.html'), 404
     else:
       app.logger.info("Received post with id: " + str(post_id) + 
@@ -115,11 +113,38 @@ def metrics():
         )
     return response
 
+# Custom filter to allow only INFO level messages
+class InfoFilter(logging.Filter):
+    def filter(self, record):
+        return record.levelno == logging.INFO
+    
+
 # start the application on port 3111
 if __name__ == "__main__":
-   logging.basicConfig(
-       stream=sys.stdout,
-       format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
-       datefmt='%Y-%m-%d %H:%M:%S',
-       level=logging.DEBUG)
-   app.run(host='0.0.0.0', port='3111')
+#   logging.basicConfig(
+#       stream=sys.stdout,
+#       format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
+#       datefmt='%Y-%m-%d %H:%M:%S',
+#       level=logging.DEBUG)
+       # Get root logger
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+
+    # Create formatters and handlers
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s')
+
+    # STDOUT handler for INFO messages
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setLevel(logging.INFO)
+    stdout_handler.setFormatter(formatter)
+    stdout_handler.addFilter(InfoFilter())
+
+    # STDERR handler for ERROR messages
+    stderr_handler = logging.StreamHandler(sys.stderr)
+    stderr_handler.setLevel(logging.ERROR)
+    stderr_handler.setFormatter(formatter)
+
+    # Add handlers to the logger
+    logger.addHandler(stdout_handler)
+    logger.addHandler(stderr_handler)
+    app.run(host='0.0.0.0', port='3111')
