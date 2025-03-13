@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+  name: techtrends
+  namespace: {{ .Values.namespace.name }}
+spec:
+  ports:
+  - name: http
+    port: {{ .Values.service.port }}
+    protocol: {{ .Values.service.protocol }}
+    targetPort: {{ .Values.service.target-port }}
+  type:  {{ .Values.service.type }}
+status:
+  loadBalancer: {}

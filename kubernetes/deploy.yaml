@@ -3,24 +3,24 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: busybox
+    app: techtrend
   name: techtrend
   namespace: sandbox
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: busybox
+      app: techtrend
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: busybox
+        app: techtrend
     spec:
       containers:
       - image: usuelter/techtrend:latest
-        name: busybox
+        name: techtrend
         resources:
           requests:
             cpu: 250m
