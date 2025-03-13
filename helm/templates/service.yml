@@ -9,7 +9,7 @@ spec:
   - name: http
     port: {{ .Values.service.port }}
     protocol: {{ .Values.service.protocol }}
-    targetPort: {{ .Values.service.target-port }}
+    targetPort: {{ .Values.service.targetport }}
   type:  {{ .Values.service.type }}
 status:
   loadBalancer: {}
